@@ -6,12 +6,21 @@ from getpass import getuser
 from vlc import MediaPlayer
 import colorama as co
 import mutagen
-def find(): # get the directory and make it findable
-    address = input("Welcome to my music player\nEnter the directory : ")
+print("welcome to my music play : ")
+def get_file():# get all mp3 players in input address
+    while True:
+        lst = glob(find())
+        if len(lst) == 0:
+            system('cls')
+            print("Directory is empty")
+        else:
+            return lst
+def find(): # get the directory and make it findable 
+    address = input("Enter the directory : ")
     address = address.split('\\')
     address = "\\".join(address) + "\\*.mp3" # just find mp3 files
     return address
-def player():
+def player():#main player
     #start from the first file when app start 
     first = False
     if first == False:
@@ -20,7 +29,6 @@ def player():
     while True: 
         #global file # make it global variable
         system('cls')
-        lst_1 = [lst[play]]
         file = MediaPlayer(lst[play])
         volume = file.audio_get_volume()
         file.play()
@@ -65,12 +73,12 @@ def chvolume(event,file,vol):#change the volume
         return vol - 5  
 def show_name(play,volume,time):#print informations
     system('cls')
-    print(co.Fore.BLUE + "y = change | n = next | p = Previous | g = goto | e = exit")
-    print(co.Fore.RED + "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
+    print(co.Fore.BLUE + "y = change | n = next | p = Previous | g = goto | w = vl+ | s = vl- | e = exit")
+    print(co.Fore.RED + "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
     name = lst[play].split("\\")
     name = name[len(name)-1].split('.')
     name.pop(len(name)-1)
-    print(co.Fore.GREEN + "file number : {}".format(play + 1).ljust(20),end=time.rjust(6))
+    print(co.Fore.GREEN + "file number : {}".format(play + 1).ljust(20),end = time.rjust(6))
     print("\nfile name : {}".format(name[(len(name) - 1)]))
     print("vloume : {}".format(volume))
 def timer(play):#get time of any file
@@ -81,7 +89,5 @@ def timer(play):#get time of any file
     if len(sec) == 1: # make it good style
         sec = '0' + sec
     return minu + ":" + sec
-# get all mp3 players in telegram Desktop
-lst = glob(find())
-#start program
+lst = get_file()
 player()
