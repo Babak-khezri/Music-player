@@ -1,13 +1,17 @@
 from glob import glob
+from tkinter import filedialog , Tk
 from random import randrange
 from click import getchar
 from os import system
 from getpass import getuser
 from vlc import MediaPlayer
-import colorama as co
-import mutagen
-print("welcome to my music play : ")
+from colorama import init, Fore, Style
+from mutagen import File
+from time import sleep
+init(convert=True)
+print(Style.BRIGHT + Fore.LIGHTCYAN_EX + "Welcome to my music play :\nSelect your Directory")
 def get_file():# get all mp3 players in input address
+    sleep(1)
     while True:
         lst = glob(find())
         if len(lst) == 0:
@@ -16,7 +20,9 @@ def get_file():# get all mp3 players in input address
         else:
             return lst
 def find(): # get the directory and make it findable 
-    address = input("Enter the directory : ")
+    tkin = Tk()
+    tkin.withdraw()
+    address = filedialog.askdirectory()
     address = address.split('\\')
     address = "\\".join(address) + "\\*.mp3" # just find mp3 files
     return address
@@ -56,7 +62,7 @@ def change(event,file,play): # change mp3 file
         return play - 1
     if event == 'g':#go to input file
         while True:
-            go = input("goto : ")
+            go = input("| goto : ")
             #check its acceptable input
             if not go.isdigit():
                 continue
@@ -73,16 +79,16 @@ def chvolume(event,file,vol):#change the volume
         return vol - 5  
 def show_name(play,volume,time):#print informations
     system('cls')
-    print(co.Fore.BLUE + "y = change | n = next | p = Previous | g = goto | w = vl+ | s = vl- | e = exit")
-    print(co.Fore.RED + "-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
+    print(Fore.BLUE + "| Y = Change | N = Next | P = Previous | G = Goto | W = Vl+ | S = Vl- | E = Exit")
+    print(Fore.RED + "| -_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
     name = lst[play].split("\\")
     name = name[len(name)-1].split('.')
     name.pop(len(name)-1)
-    print(co.Fore.GREEN + "file number : {}".format(play + 1).ljust(20),end = time.rjust(6))
-    print("\nfile name : {}".format(name[(len(name) - 1)]))
-    print("vloume : {}".format(volume))
+    print(Fore.GREEN + "| File number : {}".format(play + 1).ljust(20),end = time.rjust(6))
+    print("\n| File name : {}".format(name[(len(name) - 1)]))
+    print("| Vloume : {}".format(volume))
 def timer(play):#get time of any file
-    time = mutagen.File(lst[play])
+    time = File(lst[play])
     time = int(time.info.length)#get the files time in secound
     minu = str(time // 60)# get minute
     sec = str(time % 60)#get second
