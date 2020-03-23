@@ -43,24 +43,24 @@ def player():#main player
         while True:
             show_name(play,volume,time)
             event = getchar()
-            if event == "p" or event == "g" or event == "n" or event == "y" or event == "e" or event == "P" or event == "G" or event == "N" or event == "Y" or event == "E":
+            if event == "p" or event == "g" or event == "n" or event == "c" or event == "e" or event == "P" or event == "G" or event == "N" or event == "C" or event == "E":
                 play = change(event,file,play)
                 break
             if event == 'w' or event == 's' or event == 'W' or event == 'S':
                 volume = chvolume(event,file,volume)
                 file.audio_set_volume(volume)
 def change(event,file,play): # change mp3 file
-    if event == 'y':#get random file
+    if event == 'c' or event == 'C':#get random file
         rand = randrange(0,len(lst))
         file.stop()
         return rand
-    if event == 'n':#go to next file
+    if event == 'n' or event == 'N':#go to next file
         file.stop()
         return play + 1
-    if event == 'p':# go to pervios file
+    if event == 'p' or event == 'P':# go to pervios file
         file.stop()
         return play - 1
-    if event == 'g':#go to input file
+    if event == 'g' or event == 'G':#go to input file
         while True:
             go = input("||goto : ")
             #check its acceptable input
@@ -70,22 +70,22 @@ def change(event,file,play): # change mp3 file
                 break
         file.stop()
         return (int(go) - 1)
-    if event == 'e':
+    if event == 'e' or event == 'E':
         exit(0)
 def chvolume(event,file,vol):#change the volume
-    if event == "w":
+    if event == "w" or event == 'W':
         if vol < 350:
             return vol + 5
         else:
             return vol
-    if event == "s":
+    if event == "s" or event == 'S':
         if vol > 0:
             return vol - 5 
         else:
             return vol 
 def show_name(play,volume,time):#print informations
     system('cls')
-    print(Fore.BLUE + "||Y = Change | N = Next | P = Previous | G = Goto | W = Vl+ | S = Vl- | E = Exit")
+    print(Fore.BLUE + "||C = Change | N = Next | P = Previous | G = Goto | W = Vl+ | S = Vl- | E = Exit")
     print(Fore.RED + "||-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
     name = lst[play].split("\\")
     name = name[len(name)-1].split('.')
