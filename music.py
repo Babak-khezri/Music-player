@@ -40,26 +40,44 @@ def player():#main player
         file.play()
         #get the time of file
         time = timer(play)
+        puse = True
         while True:
             show_name(play,volume,time)
             event = getchar()
-            if event == "p" or event == "g" or event == "n" or event == "c" or event == "e" or event == "P" or event == "G" or event == "N" or event == "C" or event == "E":
+            if event == "p" or event == "g" or event == "n" or event == "c" or event == "e" or event == "P" or event == "G" or event == "N" or event == "C" or event == "E" :
                 play = change(event,file,play)
                 break
             if event == 'w' or event == 's' or event == 'W' or event == 'S':
                 volume = chvolume(event,file,volume)
                 file.audio_set_volume(volume)
+            if ord(event) == ord(" "):
+                if puse == True:
+                    file.pause()
+                    puse = False
+                    continue
+                if puse == False:
+                    print("Hi")
+                    file.play()
+                    puse = True
 def change(event,file,play): # change mp3 file
     if event == 'c' or event == 'C':#get random file
         rand = randrange(0,len(lst))
         file.stop()
         return rand
     if event == 'n' or event == 'N':#go to next file
-        file.stop()
-        return play + 1
+        if play == len(lst) - 1:
+            file.stop()
+            return 0
+        else:
+            file.stop()
+            return play + 1
     if event == 'p' or event == 'P':# go to pervios file
-        file.stop()
-        return play - 1
+        if play == 0:
+            file.stop()
+            return play
+        else:
+            file.stop()
+            return play - 1
     if event == 'g' or event == 'G':#go to input file
         while True:
             go = input("||goto : ")
