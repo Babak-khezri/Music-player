@@ -1,87 +1,106 @@
 from glob import glob
-from tkinter import filedialog , Tk
+from tkinter import filedialog, Tk
 from random import randrange
 from click import getchar
-from os import system
+from os import system, _exit
 from getpass import getuser
 from vlc import MediaPlayer
 from colorama import init, Fore, Style
 from mutagen import File
 from time import sleep
+from threading import *
+play = time = file = first = volume = 0  # Global variables
+timer = 100000
 init(convert=True)
-print(Style.DIM + Fore.LIGHTCYAN_EX + "Welcome to my music play :\nSelect your Directory")
-def get_file():# get all mp3 players in input address
+print(Style.DIM + Fore.LIGHTCYAN_EX +"Welcome to my music play :\nSelect your Directory")
+
+
+def get_file():  # Get all mp3 players in input address
     sleep(0.5)
     while True:
         lst = glob(find())
         if len(lst) == 0:
             system('cls')
             print("Directory is empty")
+            sleep(2)
         else:
+            thread = Thread(target=next_music)
+            thread.start()
             return lst
-def find(): # get the directory and make it findable 
+
+
+def find():  # Met the directory and make it findable
     tkin = Tk()
     tkin.withdraw()
     address = filedialog.askdirectory()
     address = address.split('\\')
-    address = "\\".join(address) + "\\*.mp3" # just find mp3 files
+    address = "\\".join(address) + "\\*.mp3"  # just find mp3 files
     return address
-def player():#main player
-    #start from the first file when app start 
-    first = False
+
+
+def player():  # Main player
+    # start from the first file when app start
+    global first
     if first == False:
+        global play
         play = 0
         first = True
-    while True: 
-        #global file # make it global variable
+    while True:
         system('cls')
+        global file
+        global volume
         file = MediaPlayer(lst[play])
         volume = file.audio_get_volume()
         file.play()
-        #get the time of file
-        time = timer(play)
+        # get the time of file
+        time_file = size()
         puse = True
         while True:
-            show_name(play,volume,time)
+            show_name(time_file)
             event = getchar()
-            if event == "p" or event == "g" or event == "n" or event == "c" or event == "e" or event == "P" or event == "G" or event == "N" or event == "C" or event == "E" :
-                play = change(event,file,play)
+            if event == "p" or event == "g" or event == "n" or event == "c" or event == "e" or event == "P" or event == "G" or event == "N" or event == "C" or event == "E":
+                play = change(event)
                 break
             if event == 'w' or event == 's' or event == 'W' or event == 'S':
-                volume = chvolume(event,file,volume)
+                volume = chVolume(event, volume)
                 file.audio_set_volume(volume)
             if ord(event) == ord(" "):
                 if puse == True:
                     file.pause()
                     puse = False
+                    print("||poused")
                     continue
                 if puse == False:
-                    print("Hi")
                     file.play()
                     puse = True
-def change(event,file,play): # change mp3 file
-    if event == 'c' or event == 'C':#get random file
-        rand = randrange(0,len(lst))
+
+
+def change(event):  # Change mp3 file
+    if event == 'c' or event == 'C':  # get random file
+        file.stop()
+        rand = randrange(0, len(lst))
         file.stop()
         return rand
-    if event == 'n' or event == 'N':#go to next file
+    if event == 'n' or event == 'N':  # go to next file
+        file.stop()
         if play == len(lst) - 1:
             file.stop()
             return 0
         else:
             file.stop()
             return play + 1
-    if event == 'p' or event == 'P':# go to pervios file
+    if event == 'p' or event == 'P':  # go to pervios file
+        file.stop()
         if play == 0:
             file.stop()
             return play
         else:
             file.stop()
             return play - 1
-    if event == 'g' or event == 'G':#go to input file
+    if event == 'g' or event == 'G':  # go to input file
         while True:
             go = input("||goto : ")
-            #check its acceptable input
+            # check its acceptable input
             if not go.isdigit():
                 continue
             if int(go) > 0 and int(go) <= len(lst):
@@ -89,8 +108,10 @@ def change(event,file,play): # change mp3 file
         file.stop()
         return (int(go) - 1)
     if event == 'e' or event == 'E':
-        exit(0)
-def chvolume(event,file,vol):#change the volume
+        _exit(0)
+
+
+def chVolume(event, vol):  # Change the volume
     if event == "w" or event == 'W':
         if vol < 350:
             return vol + 5
@@ -98,27 +119,54 @@ def chvolume(event,file,vol):#change the volume
             return vol
     if event == "s" or event == 'S':
         if vol > 0:
-            return vol - 5 
+            return vol - 5
         else:
-            return vol 
-def show_name(play,volume,time):#print informations
+            return vol
+
+
+def show_name(time_f):  # Print informations
     system('cls')
-    print(Fore.BLUE + "||C = Change | N = Next | P = Previous | G = Goto | W = Vl+ | S = Vl- | E = Exit")
+    print(Fore.LIGHTMAGENTA_EX +"||C = Change | N = Next | P = Previous | G = Goto | W = Vl+ | S = Vl- | E = Exit")
     print(Fore.RED + "||-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
     name = lst[play].split("\\")
     name = name[len(name)-1].split('.')
     name.pop(len(name)-1)
     name = "".join(name)
-    print(Fore.GREEN + "||File number : {}".format(play + 1).ljust(20),end = time.rjust(6))
+    print(Fore.GREEN + "||File number : {}".format(play + 1).ljust(20), end=time_f.rjust(6))
     print("\n||File name : {}".format(name))
     print("||Vloume : {}".format(volume))
-def timer(play):#get time of any file
+
+
+def size():  # Get time of any file
+    global timer
     time = File(lst[play])
-    time = int(time.info.length)#get the files time in secound
-    minu = str(time // 60)# get minute
-    sec = str(time % 60)#get second
-    if len(sec) == 1: # make it good style
+    time = int(time.info.length)  # get the files time in secound
+    timer = int(time)
+    minu = str(time // 60)  # get minute
+    sec = str(time % 60)  # get second
+    if len(sec) == 1:  # make it good style
         sec = '0' + sec
     return minu + ":" + sec
+
+
+def next_music():  # When music over go to next
+    global play
+    global timer
+    global file
+    global volume
+    while True:
+        sleep(1)
+        timer -= 1
+        if timer == 0:
+            timer -= 1
+            play += 1
+            file = MediaPlayer(lst[play])
+            file.stop()
+            timer = int(File(lst[play]).info.length)
+            volume = file.audio_get_volume()
+            show_name(size())
+            file.play()
+
+
 lst = get_file()
 player()
