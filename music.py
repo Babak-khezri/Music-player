@@ -163,7 +163,6 @@ def next_music():  # When music over go to next
             file = MediaPlayer(lst[play])
             file.stop()
             timer = int(File(lst[play]).info.length)
-            volume = file.audio_get_volume()
             show_name(size())
             file.play()
 
