@@ -10,6 +10,7 @@ from mutagen import File
 from time import sleep
 from threading import *
 play = time = file = first = volume = 0  # Global variables
+time_file = ""
 timer = 100000
 init(convert=True)
 print(Style.DIM + Fore.LIGHTCYAN_EX +"Welcome to my music play :\nSelect your Directory")
@@ -49,6 +50,7 @@ def player():  # Main player
         system('cls')
         global file
         global volume
+        global time_file
         file = MediaPlayer(lst[play])
         volume = file.audio_get_volume()
         file.play()
@@ -56,7 +58,7 @@ def player():  # Main player
         time_file = size()
         puse = True
         while True:
-            show_name(time_file)
+            show_name()
             event = getchar()
             if event == "p" or event == "g" or event == "n" or event == "c" or event == "e" or event == "P" or event == "G" or event == "N" or event == "C" or event == "E":
                 play = change(event)
@@ -124,7 +126,8 @@ def chVolume(event, vol):  # Change the volume
             return vol
 
 
-def show_name(time_f):  # Print informations
+def show_name():  # Print informations
+    global time_file
     system('cls')
     print(Fore.LIGHTMAGENTA_EX +"||C = Change | N = Next | P = Previous | G = Goto | W = Vl+ | S = Vl- | E = Exit")
     print(Fore.RED + "||-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-")
@@ -132,7 +135,7 @@ def show_name(time_f):  # Print informations
     name = name[len(name)-1].split('.')
     name.pop(len(name)-1)
     name = "".join(name)
-    print(Fore.GREEN + "||File number : {}".format(play + 1).ljust(20), end=time_f.rjust(6))
+    print(Fore.GREEN + "||File number : {}\t".format(play + 1).ljust(20) +  time_file, end = "")
     print("\n||File name : {}".format(name))
     print("||Vloume : {}".format(volume))
 
@@ -146,7 +149,7 @@ def size():  # Get time of any file
     sec = str(time % 60)  # get second
     if len(sec) == 1:  # make it good style
         sec = '0' + sec
-    return minu + ":" + sec
+    return "< " + minu + ":" + sec + " >"
 
 
 def next_music():  # When music over go to next
@@ -154,16 +157,18 @@ def next_music():  # When music over go to next
     global timer
     global file
     global volume
+    global time_file
     while True:
         sleep(1)
         timer -= 1
-        if timer == 0:
+        if timer == -2:
             timer -= 1
             play += 1
             file = MediaPlayer(lst[play])
             file.stop()
+            time_file = size()
             timer = int(File(lst[play]).info.length)
-            show_name(size())
+            show_name()
             file.play()
 
 
