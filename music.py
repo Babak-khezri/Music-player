@@ -52,6 +52,7 @@ def player(play):
 
 
 def events(file,play,volume,time_file):
+    pause = True
     while True:
         global event
         if event == "b" or event == "g" or event == "n" or event == "c" or event == "e" or event == "B" or event == "G" or event == "N" or event == "C" or event == "E":
@@ -62,6 +63,15 @@ def events(file,play,volume,time_file):
             file.audio_set_volume(volume)
             event = 'none'
             show_name(time_file,play,volume)
+        elif event == ' ':
+            event = 'none'
+            if pause == True:
+                file.pause()
+                pause = False
+                continue
+            else :
+                file.play()
+                pause = True
         else:
             continue
 
@@ -107,7 +117,7 @@ def chVolume(event, vol):  # Change the volume
 
 
 def show_name(time_file,play,volume):  # Print informations
-    #system('cls')
+    system('cls')
     print(Fore.LIGHTMAGENTA_EX +"||C = Change | N = Next | B = Back | G = Goto | W = Vl+ | S = Vl- | E = Exit")
     print(Fore.RED + "||-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_")
     name = lst[play].split("\\")
