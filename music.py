@@ -1,33 +1,42 @@
 from glob import glob
 from tkinter import *
 from tkinter import filedialog
-from random import randrange
+from random import randrange, choice
 from click import getchar
 from os import system, _exit
 from vlc import MediaPlayer
 from mutagen import File
 from time import sleep
 from threading import Thread
-timer = [1000,10]
-event = None
-box_info = ['0', '0', '0', '0']
+from emojis import encode
+from tqdm import tqdm
+timer = event = but = None
+box_info = ['','','','']
+
 
 def get_files():  # Get all mp3 players in input address
+    colors = ['red','pink','purple','orange','yellow','green','blue','white','brown']
     destroy = True
     sleep(0.5)
     welcome_mas = Tk()
-    Label(welcome_mas,text = "<<  welcome  >>\n    Please select ur directory    ",font = ("Times",25,'bold')).pack()
+    massage = Label(welcome_mas,text = "<<  welcome  >>\n    Please select ur directory    ")
+    massage.config(font = ("Times",25,'bold') , fg = '#000066',bg='#ffb6ff')
+    massage.grid(row=0,column=0)
     while True:
         List_files = glob(Select_Dir())
         if destroy == True:
             welcome_mas.destroy()
+            warining_page = Tk()
             destroy = False
-        tkin = Tk()
-        tkin.title("warning")
         if len(List_files) == 0:
-            Label(tkin,text = "Directory is empty ...",font = ("Times",25,'bold')).pack()
+            warining_page.title("warning")
+            massage = Label(warining_page,text = "Directory is empty ...")
+            massage.config(font = ("Times",25,'bold'), fg = choice(colors), bg = '#00004d')
+            massage.grid(row=0,column=0)
             sleep(1)
         else:
+            warining_page.destroy()
+            Thread(target = Open_GUI).start()
             Thread(target=next_music).start()
             Thread(target=add_event).start()
             return List_files
@@ -67,27 +76,29 @@ def graphic(): # Graphic by tkinter
     time_file = Label(win)
     volume = Label(win)
     number = Label(win)
-    photo_n = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\n.png') 
-    photo_e = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\e.png') 
-    photo_b = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\b.png') 
-    photo_c = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\c.png') 
+    photo_ne = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ne.png') 
+    photo_ex = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ex.png') 
+    photo_ba = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ba.png') 
+    photo_ch = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ch.png') 
     photo_vu = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\vu.png') 
     photo_vd = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\vd.png') 
     photo_pu = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\pu.png') 
-    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_c , command=lambda: GUI_control('c')).grid(row = 7,column=0)
-    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_b , command=lambda: GUI_control('b')).grid(row = 7,column=2)
-    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_pu ,command=lambda: GUI_control(' ')).grid(row = 7,column=1)
-    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_n , command=lambda: GUI_control('n')).grid(row = 7,column=3)
+    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_ch, command=lambda: GUI_control('c')).grid(row = 7,column=0)
+    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_ba, command=lambda: GUI_control('b')).grid(row = 7,column=2)
+    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_pu, command=lambda: GUI_control(' ')).grid(row = 7,column=1)
+    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_ne, command=lambda: GUI_control('n')).grid(row = 7,column=3)
     Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_vd, command=lambda: GUI_control('w')).grid(row = 7,column=4)
     Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_vu, command=lambda: GUI_control('s')).grid(row = 7,column=5)
-    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_e , command=lambda: GUI_control('e')).grid(row = 7,column=6)
+    Button(win,height = 55, width = 60, bd=16,bg='#000099',image = photo_ex, command=lambda: GUI_control('e')).grid(row = 7,column=6)
     GUI_control('none')
+    global but
+    but = Button(win,command=lambda: GUI_control('none'))
+    but.invoke()
     win.mainloop()
 
 
 def player(play): # MAin player
-    global box_info
-    global event
+    global box_info, event
     event = 'none'
     play = int(play)
     file = MediaPlayer(List_files[play])
@@ -181,13 +192,15 @@ def size_file(play):  # Get time of any file
 
 
 def next_music():  # When music over go to next
-    global event
+    global event, but
     while True:
         sleep(1)
         timer[0] -= 1
         if timer[0] == -1:
             timer[0] -= 1
             event = 'n'
+            sleep(0.1)
+            but.invoke()
 
 
 def add_event(): # Add commands
@@ -204,7 +217,6 @@ def Open_GUI():  # If gui closed this open it again
     while True:
         graphic()
 
-Thread(target = Open_GUI).start()
-List_files = get_files()
 
+List_files = get_files()
 player(0)
