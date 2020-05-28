@@ -91,8 +91,8 @@ def graphic(): # Graphic by tkinter
     global but
     but = Button(win, command=lambda: GUI_control('none')) # The unshow but for show name when program go to next music by timer
     but.invoke() # Put the button automatically
-    win.bind('<G>', Go_To) # IF G presses go to this function
-    win.bind('<g>', Go_To) # IF G presses go to this function
+    win.bind('<G>', Pressing_G) # IF G presses go to this function
+    win.bind('<g>', Pressing_G) # IF G presses go to this function
     win.mainloop()
 
 
@@ -106,7 +106,7 @@ def player(play): # MAin player
     name = file_name(play)
     info_box = [name, play+1, time_file, volume] # Add informations to the list for showing
     commands(file, play, volume, time_file)
-
+    
 
 def file_name(play): # Get the name of the file
     name = List_of_files[play].split("\\")
@@ -119,9 +119,12 @@ def commands(file, play, volume, time_file): #Check commands
     global command , info_box
     pause = True # Pause and unpa
     while True:
-        if command in ["bac","nex","cha","exi","GoTo"]:
+        if command in ["bac","nex","cha","exi"]:
             file.stop()
             change(command, play)
+            command = 'pau'
+        if command == 'GoTo':
+            GoTo(file)       
         elif command == 'vl+' or command == 'vl-':
             volume = chVolume(command, volume)
             file.audio_set_volume(volume)
@@ -140,6 +143,33 @@ def commands(file, play, volume, time_file): #Check commands
             continue
 
 
+def GoTo(file):
+    def accept(event):
+        file.stop()
+        play = int(Enter.get()) - 1
+        Go_win.destroy()
+        Thread(target=change_info).start()
+        player(play)
+    def Cancel():
+        global command
+        command = 'none'
+        Go_win.destroy()
+    Go_win = Tk()
+    Go_win.resizable(False,False)
+    Go_win.title('GO_TO')
+    Go_win['background'] = 'pink'
+    Label(Go_win,text='Enter number : ',font=("Times",15,'bold'),bg='pink').grid(row = 0,column=0)
+    Label(Go_win,bg='pink',text='-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-',font=("Times",7,'bold')).grid(row = 1,column=0,columnspan=3)
+    Label(Go_win,text='🎼',font=("Times",30,'bold'),bg='pink').grid(row = 2,column=0)
+    Enter = Entry(Go_win,font=("Times",15,'bold'))
+    Enter.grid(row = 0,column=1,columnspan=2)
+    Button(Go_win,bd=6,text='go',command = lambda:accept('none'),font=("Times",13,'bold')).grid(row = 2,column=1)
+    Button(Go_win,bd=6,text = 'cancel',command=Cancel,font=("Times",13,'bold')).grid(row = 2,column=2)
+    
+    Go_win.bind('<Return>', accept)
+    Go_win.mainloop()
+
+
 def change(command, play):  # Change mp3 file
     if command == 'cha':  # get random file
         rand = randrange(0, len(List_of_files))
@@ -154,9 +184,6 @@ def change(command, play):  # Change mp3 file
             player(play)
         else:
             player(play - 1)
-    if command == 'GoTo':
-        g = Tk()
-        Label(g,text='babak').pack()
     if command == 'exi':
         _exit(0)
 
@@ -187,24 +214,30 @@ def size_file(play):  # Get time of any file
 
 
 def next_music():  # When music over go to next
-    global command, but
+    global command
     while True: # A timer
         sleep(1)
         timer[0] -= 1
         if timer[0] == 0:
             timer[0] -= 1
             command = 'nex'
-            sleep(0.1) # Get time to informations change
-            but.invoke() # Push to extra button for showing informations
-
+            change_info()
+    
 
 def Open_GUI():  # If GUI closed this open it again
     while True:
         graphic()
 
 
-def Go_To(event):
+def Pressing_G(event):
     global command
     command = 'GoTo'
+
+
+def change_info():
+    sleep(0.1)
+    but.invoke()
+
+
 List_of_files = get_files()
 player(0)
