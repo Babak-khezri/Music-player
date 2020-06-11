@@ -8,63 +8,71 @@ from mutagen import File # Get time file
 from time import sleep
 from threading import Thread
 from tkinter.messagebox import showerror 
+from sys import maxsize # For pause timer
 
-timer = command = but = List_of_files = None # Global variables
-info_box = ['','','',''] # Main list
+Timer = command = Indicator_Button = List_of_files = None # Global variables
+Info_Box = ['','','',''] # Main information list
 
-def get_files(): # Get all mp3 players in input address
-    colors = ['red','pink','purple','orange','yellow','green','blue','white','brown'] # Colors for warning show
-    destroy = True # Destroyed first Gui page 1 time
+def Get_Files(): # Get all mp3 players in selected directory
+    Colors = ['red','pink','purple','orange','yellow','green','blue','white','brown'] # Colors for warning show
+    Destroy = True # Destroyed first Gui page 1 time
     sleep(0.5)
     welcome_win = Tk() # First Gui window
     welcome_win.geometry('424x81+600+0')
     welcome_win.protocol("WM_DELETE_WINDOW",lambda:_exit(0)) # Turn off close window
-    massage = Label(welcome_win, text = "<<  welcome  >>\n    Please select ur directory    ")
-    massage.config(font = ("Times",25,'bold') ,fg = '#000066', bg='#ffb6ff')
-    massage.grid(row = 0,column = 0)
+    Massage = Label(welcome_win, text = "<<  welcome  >>\n    Please select ur directory    ")
+    Massage.config(font = ("Times",25,'bold') ,fg = '#000066', bg='#ffb6ff')
+    Massage.grid(row = 0,column = 0)
     while True:
-        List_of_files = glob(Select_Dir()) # Get the Directore mp3 files
-        if destroy == True: 
+        List_of_files = glob(Select_Dirctory()) # Get the Directore mp3 files
+        if Destroy == True: 
             welcome_win.destroy()
             warining_win = Tk() # Make second Gui window that if dirctory be ampty will come up
             warining_win.protocol("WM_DELETE_WINDOW",lambda:_exit(0)) # Turn off close window
-            destroy = False
+            Destroy = False
         if len(List_of_files) == 0: # Directory is empty
             warining_win.title("warning")
             warning = Label(warining_win,text = "Directory is empty ...")
-            warning.config(font = ("Times",25,'bold'), fg = choice(colors), bg = '#00004d')
+            warning.config(font = ("Times",25,'bold'), fg = choice(Colors), bg = '#00004d')
             warning.grid(row = 0,column = 0)
             sleep(1)
         else: # Directory is not empty
             warining_win.destroy() # Destroyed second Gui window
-            Thread(target = graphic).start() # Open main Gui
-            Thread(target = next_music).start() # Open timer for mp3 files
+            Thread(target = Graphics).start() # Open main Gui
+            Thread(target = File_Timer).start() # Open timer for mp3 files
             return List_of_files
 
 
-def Select_Dir(): # Met the directory and make it findable
-    address = filedialog.askdirectory()
-    address +=  "\\*.mp3"  # just find mp3 files
-    return address
+def Select_Dirctory(): # Get the directory
+    Address = filedialog.askdirectory()
+    Address +=  "\\*.mp3"  # just find mp3 files
+    return Address
 
 
-def graphic(): # Graphic by tkinter
-    win = Tk()  
-    win.resizable(False,False) # Lock change size
-    win.title('music player')
-    app_icon = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ico.png')
-    win.iconphoto(False , app_icon) # Change icon
-    win['background']='#000d33' # Change main background
-    Label(win, text="◤        🎵 welcome to my music player 🎵        ◥",fg = '#40ff00', bg = '#000d33', font = ("Times",24,'bold')).grid(row = 0,column=0,columnspan = 8)
-    Label(win,text = '|_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|',fg = '#ffcc00',bg = '#000d33',font = ("Helvetica",24,'bold')).grid(row = 1,column=0,columnspan = 50)
+def Graphics(): # Graphic by using tkinter
+    win = Tk()    
+    def Gui_sitting(): # GUI main sittings
+        win.resizable(False,False) # Lock change size
+        win.title('music player')
+        App_Icon = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ico.png')
+        win.iconphoto(False , App_Icon) # Change icon
+        win['background']='#000d33' # Change main background
+        win.bind('<G>', Pressing_G) # If G presses go to this function
+        win.bind('<g>', Pressing_G) # If G presses go to this function
+        win.bind('<Button-3>',Right_click) # With right click menu show
+        win.protocol("WM_DELETE_WINDOW",lambda:0) # Turn off close window
+        global Indicator_Button
+        Indicator_Button = Button(win, command = lambda: GUI_control('none')) # The unshow but for show indormations when program go to next music by timer
+        Label(win, text="◤ 🎵 Welcome to my music player 🎵 ◥",fg = '#40ff00', bg = '#000d33', font = ("Comic sans MS",24,'bold')).grid(row = 0,column=0,columnspan = 8)
+        Label(win,text = '|_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|',fg = '#ffcc00',bg = '#000d33',font = ("Comic sans MS",24,'bold')).grid(row = 1,column=0,columnspan = 50)
     def show_info(): # show the informations
-        name_file.config(text=info_box[0], fg= '#ff0000', font = ("Times",18,'bold'), bg = '#000d33')
+        name_file.config(text = Info_Box[0], fg = '#ff0000', font = ("Times",18,'bold'), bg = '#000d33')
+        time_file.config(text = Info_Box[1], fg = '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
+        volume.config(text = Info_Box[2], fg = '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
+        number.config(text = Info_Box[3], fg = '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
         name_file.grid(row = 2, column = 0, columnspan = 8)
-        time_file.config(text=info_box[1], fg= '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
         time_file.grid(row = 3, column = 1, columnspan = 5)
-        volume.config(text=info_box[2], fg= '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
-        volume.grid(row = 4, column = 1, columnspan = 5)
-        number.config(text=info_box[3], fg= '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
+        volume.grid(row = 4, column = 1, columnspan = 5)        
         number.grid(row = 5, column = 1, columnspan = 5)
     def GUI_control(but): # Make commands
         global command
@@ -75,15 +83,18 @@ def graphic(): # Graphic by tkinter
         def menu_commands(get_command):
             global command
             command = get_command
-            change_info()
+            Change_Info()
         menu_bar = Menu(win,tearoff=0) # Make menu bar
-        menu_bar.add_command(label='restart',command=Change_Directory) # Change the Dirctory and get another files
-        menu_bar.add_command(label='change',command=lambda:menu_commands('cha'))
-        menu_bar.add_command(label='next',command=lambda:menu_commands('nex'))
-        menu_bar.add_command(label='back',command=lambda:menu_commands('bac'))
-        menu_bar.add_command(label='GoTo',command=lambda:menu_commands('GoTo'))
-        menu_bar.add_command(label='exit',command=lambda:_exit(0)) # close the program
+        menu_bar.add_command(label='Restart',command=Change_Directory) # Change the Dirctory and get another files
+        menu_bar.add_command(label='Change', command=lambda:menu_commands('cha'))
+        menu_bar.add_command(label='Next',   command=lambda:menu_commands('nex'))
+        menu_bar.add_command(label='Back',   command=lambda:menu_commands('bac'))
+        menu_bar.add_command(label='GoTo',   command=lambda:menu_commands('GoTo'))
+        menu_bar.add_command(label='Exit',   command=lambda:_exit(0)) # close the program
         menu_bar.tk_popup(event.x_root,event.y_root) # Create menu in mouse place
+    def Pressing_G(event): # When press G this function go to Goto window
+        global command
+        command = 'GoTo'
     name_file = Label(win)
     time_file = Label(win)
     volume = Label(win)
@@ -102,31 +113,24 @@ def graphic(): # Graphic by tkinter
     Button(win,height=55, width=60, bd=16,bg='#000099', image=photo_vod, command=lambda: GUI_control('vl+')).grid(row = 7,column=4)
     Button(win,height=55, width=60, bd=16,bg='#000099', image=photo_vou, command=lambda: GUI_control('vl-')).grid(row = 7,column=5)
     Button(win,height=55, width=60, bd=16,bg='#000099', image=photo_exi, command=lambda: GUI_control('exi')).grid(row = 7,column=6)
-    sleep(0.3)
-    GUI_control('none')
-    global but
-    but = Button(win, command = lambda: GUI_control('none')) # The unshow but for show name when program go to next music by timer
-    but.invoke() # Put the button automatically
-    win.bind('<G>', Pressing_G) # If G presses go to this function
-    win.bind('<g>', Pressing_G) # If G presses go to this function
-    win.bind('<Button-3>',Right_click) # With right click menu show
-    win.protocol("WM_DELETE_WINDOW",lambda:0) # Turn off close window
+    Gui_sitting()
+    Change_Info() # Show First file when player open
     win.mainloop()
 
 
-def player(play): # MAin player
-    global info_box, command
+def Main_player(play): # MAin player
+    global Info_Box, command
     command = 'none' # Avoid running a command twice
     file = MediaPlayer(List_of_files[play])
     file.play()
     volume = file.audio_get_volume()
-    time_file = size_file(play)
-    name = file_name(play)
-    info_box = [name, play+1, time_file, volume] # Add informations to the list for showing
+    time_file = Size_File(play)
+    name = File_Name(play)
+    Info_Box = [name, play+1, time_file, volume] # Add informations to the list for showing
     commands(file, play, volume, time_file)
     
 
-def file_name(play): # Get the name of the file
+def File_Name(play): # Get the name of file
     name = List_of_files[play].split("\\")
     name = name[-1].split('.')
     name.pop(-1)
@@ -137,34 +141,37 @@ def file_name(play): # Get the name of the file
         return name    
 
 
-def commands(file, play, volume, time_file): #Check commands
-    global command , info_box
+def commands(file, play, volume, time_file): # Check commands
+    global command, Info_Box, Timer
     pause = True # Pause and unpa
     while True:
         if command == 'bac' or command == 'nex' or command == 'cha' or command == 'exi':
             file.stop()
-            change(command, play)
+            Change(command, play)
         elif command == 'GoTo':
             GoTo(file)       
         elif command == 'vl+' or command == 'vl-':
-            volume = chVolume(command, volume)
+            volume = Change_Volume(command, volume)
             file.audio_set_volume(volume)
             command = 'none'
-            info_box[3] = volume
+            Info_Box[3] = volume
         elif command == 'pau':
             command = 'none'
             if pause == True:
                 file.pause()
                 pause = False
+                pause_time = Timer # Get Timer for when unpause start from that
+                Timer = maxsize**2
                 continue
             else:
                 file.play()
+                Timer = pause_time
                 pause = True
         else:
             continue
 
 
-def GoTo(file): # Make window to Enter the file number
+def GoTo(file): # For goto command make window to Enter the file number
     def accept(event): # Go to file
         play = Enter.get()
         if play.isdigit():
@@ -172,8 +179,8 @@ def GoTo(file): # Make window to Enter the file number
             if play >= 0 and play < len(List_of_files):
                 file.stop()
                 Go_win.destroy()
-                Thread(target=change_info).start()
-                player(play)
+                Thread(target=Change_Info).start()
+                Main_player(play)
             else:
                 Go_win.destroy()
                 showerror("error",'Can\'t find file')
@@ -194,78 +201,72 @@ def GoTo(file): # Make window to Enter the file number
     Enter = Entry(Go_win,font=("Times",15,'bold'))
     Enter.grid(row = 0,column=1,columnspan=2)
     Button(Go_win,bd=6,text='go',command = lambda:accept('none'),font=("Times",13,'bold')).grid(row = 2,column=1)
-    Button(Go_win,bd=6,text = 'cancel',command=Cancel,font=("Times",13,'bold')).grid(row = 2,column=2)
-    Go_win.bind('<Return>', accept)
+    Button(Go_win,bd=6,text = 'cancel',command=Cancel,font=("Times",13,'bold')).grid(row = 2,column=2) # Cancel
+    Go_win.bind('<Return>', accept) # Accept buy pressing Enter
     Go_win.mainloop()
 
 
-def change(command, play):  # Change mp3 file
+def Change(command, play):  # Change mp3 file or Close program
     if command == 'cha':  # get random file
-        randome = randrange(0, len(List_of_files))
-        player(randome)
+        Random = randrange(0, len(List_of_files))
+        Main_player(Random)
     if command == 'nex':  # go to next file
         if play == len(List_of_files) - 1:
-            player(0)
+            Main_player(0)
         else:
-            player(play + 1)
+            Main_player(play + 1)
     if command == 'bac':  # go to pervios file
         if play == 0:
-            player(play)
+            Main_player(play)
         else:
-            player(play - 1)
+            Main_player(play - 1)
     if command == 'exi':
         _exit(0)
 
 
-def chVolume(command, volume): # Change the volume
+def Change_Volume(command, Volume): # Change the volume
     if command == 'vl+':
-        if volume < 250:
-            return volume + 5
+        if Volume < 250:
+            return Volume + 5
         else:
-            return volume
+            return Volume
     if command == 'vl-':
-        if volume > 0:
-            return volume - 5
+        if Volume > 0:
+            return Volume - 5
         else:
-            return volume
+            return Volume
 
 
-def size_file(play): # Get time of any file
-    global timer
-    time = File(List_of_files[play])
-    time = int(time.info.length)  # Get the files time in secound
-    timer = [int(time), play] # Send it for timer function
-    minute = str(time // 60)  # get minute
-    second = str(time % 60)  # get second
-    if len(second) == 1:  # make it final style
-        second = '0' + second
-    return ("⌛ " + minute + ":" + second + " ⌛")
+def Size_File(play): # Get time of any file
+    global Timer
+    Time = File(List_of_files[play])
+    Time = int(Time.info.length)  # Get the files time in secound
+    Timer = int(Time) # Send it for timer function
+    Minute = str(Time // 60)  # get minute
+    Second = str(Time % 60)  # get second
+    if len(Second) == 1:  # Change XX:X to XX:0X
+        Second = '0' + Second
+    return ("⌛ " + Minute + ":" + Second + " ⌛")
 
 
-def next_music(): # When music over go to next
-    global command
-    while True: # A timer
+def File_Timer(): # When music over go to next
+    global command, Timer
+    while True: # Timer of file
         sleep(1)
-        timer[0] -= 1
-        if timer[0] == 0:
-            timer[0] -= 1
+        Timer -= 1
+        if Timer == 0:
             command = 'nex'
-            Thread(target=change_info).start()
+            Change_Info()
 
 
-def Pressing_G(event): # When press G this function go to Goto window
-    global command
-    command = 'GoTo'
-
-
-def change_info(): # When use goto or music end change the informations
-    sleep(0.2)
-    but.invoke()
+def Change_Info(): # When use goto or music end change the informations
+    sleep(0.3)
+    Indicator_Button.invoke()
 
 
 def Change_Directory(): # Change Direcotry and get new files
     global List_of_files
-    destroy = True # Destroyed first Gui page 1 time
+    Destroy = True # Destroyed first Gui page 1 time
     sleep(0.5)
     welcome_win = Tk() # First Gui window
     welcome_win.geometry('424x81+600+0')
@@ -273,18 +274,18 @@ def Change_Directory(): # Change Direcotry and get new files
     massage.config(font = ("Times",25,'bold') ,fg = '#000066', bg='#ffb6ff')
     massage.grid(row = 0,column = 0)
     while True:
-        List_of_files = glob(Select_Dir()) # Get the Directore mp3 files
-        if destroy == True: 
+        List_of_files = glob(Select_Dirctory()) # Get the Directore mp3 files
+        if Destroy == True: 
             welcome_win.destroy()
-            destroy = False
+            Destroy = False
         if len(List_of_files) != 0: # Directory is NOT empty
             break
 
 
-def start(): # Start the program
+def Starter(): # Start the program
     global List_of_files
-    List_of_files = get_files()
-    player(0)
+    List_of_files = Get_Files()
+    Main_player(0)
 
 
-start()
+Starter()
