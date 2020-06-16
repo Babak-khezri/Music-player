@@ -7,8 +7,7 @@ from vlc import MediaPlayer
 from mutagen import File # Get time file
 from time import sleep
 from threading import Thread
-from tkinter.messagebox import showerror 
-from sys import maxsize # For pause timer
+from tkinter.messagebox import showerror # Show Error for goto
 
 Timer = command = Indicator_Button = List_of_files = None # Global variables
 Info_Box = ['','','',''] # Main information list
@@ -53,18 +52,27 @@ def Graphics(): # Graphic by using tkinter
     win = Tk()    
     def Gui_sitting(): # GUI main sittings
         win.resizable(False,False) # Lock change size
+        win.geometry("655x355")
         win.title('music player')
         App_Icon = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ico.png')
         win.iconphoto(False , App_Icon) # Change icon
         win['background']='#000d33' # Change main background
-        win.bind('<G>', Pressing_G) # If G presses go to this function
-        win.bind('<g>', Pressing_G) # If G presses go to this function
-        win.bind('<Button-3>',Right_click) # With right click menu show
-        win.protocol("WM_DELETE_WINDOW",lambda:0) # Turn off close window
-        global Indicator_Button
+        global Indicator_Button, command
         Indicator_Button = Button(win, command = lambda: GUI_control('none')) # The unshow but for show indormations when program go to next music by timer
         Label(win, text="◤ 🎵 Welcome to my music player 🎵 ◥",fg = '#40ff00', bg = '#000d33', font = ("Comic sans MS",24,'bold')).grid(row = 0,column=0,columnspan = 8)
         Label(win,text = '|_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|',fg = '#ffcc00',bg = '#000d33',font = ("Comic sans MS",24,'bold')).grid(row = 1,column=0,columnspan = 50)
+        win.bind('<G>',Keabord_Controll) # If G presses go to this function
+        win.bind('<g>',Keabord_Controll) # If G presses go to this function
+        win.bind('<c>',Keabord_Controll)
+        win.bind('<C>',Keabord_Controll)
+        win.bind('<b>',Keabord_Controll)
+        win.bind('<B>',Keabord_Controll)
+        win.bind('<n>',Keabord_Controll)
+        win.bind('<N>',Keabord_Controll)
+        win.bind('<s>',Keabord_Controll)
+        win.bind('<S>',Keabord_Controll)
+        win.protocol("WM_DELETE_WINDOW",lambda:0) # Turn off close window
+        Top_Menu()
     def show_info(): # show the informations
         name_file.config(text = Info_Box[0], fg = '#ff0000', font = ("Times",18,'bold'), bg = '#000d33')
         time_file.config(text = Info_Box[1], fg = '#ff0000', font = ("Times",20,'bold'), bg = '#000d33')
@@ -79,22 +87,39 @@ def Graphics(): # Graphic by using tkinter
         command = but
         sleep(0.1)
         show_info()
-    def Right_click(event): # Show menu
-        def menu_commands(get_command):
+    def Top_Menu(): # Show menu
+        def Menu_commands(get_command):
             global command
             command = get_command
             Change_Info()
-        menu_bar = Menu(win,tearoff=0) # Make menu bar
-        menu_bar.add_command(label='Restart',command=Change_Directory) # Change the Dirctory and get another files
-        menu_bar.add_command(label='Change', command=lambda:menu_commands('cha'))
-        menu_bar.add_command(label='Next',   command=lambda:menu_commands('nex'))
-        menu_bar.add_command(label='Back',   command=lambda:menu_commands('bac'))
-        menu_bar.add_command(label='GoTo',   command=lambda:menu_commands('GoTo'))
-        menu_bar.add_command(label='Exit',   command=lambda:_exit(0)) # close the program
-        menu_bar.tk_popup(event.x_root,event.y_root) # Create menu in mouse place
-    def Pressing_G(event): # When press G this function go to Goto window
+        Menu_bar = Menu(win) # Make Top main menu bar
+        File_menu = Menu(Menu_bar, tearoff = 0) # Add first menu to menu bar
+        File_menu.add_command(label='Restart',command=Change_Directory)
+        File_menu.add_command(label='Change', command=lambda:Menu_commands('cha'))
+        File_menu.add_command(label='Next',   command=lambda:Menu_commands('nex'))
+        File_menu.add_command(label='Back',   command=lambda:Menu_commands('bac'))
+        File_menu.add_separator() # Just line
+        File_menu.add_command(label='Exit',   command=lambda:_exit(0))
+        Search_menu = Menu(win, tearoff = 0)
+        Search_menu.add_command(label='By name',   command=lambda:Menu_commands('search'))
+        Search_menu.add_command(label='By number',   command=lambda:Menu_commands('GoTo'))
+        Menu_bar.add_cascade(label = "File", menu = File_menu)
+        Menu_bar.add_cascade(label = "Search", menu = Search_menu)    
+        win.config(menu=Menu_bar)
+    def Keabord_Controll(event):
         global command
-        command = 'GoTo'
+        key = event.char
+        if key in ['g' or 'G']:
+            command = 'GoTo'
+        if key in ['c' or 'C']:
+            command = 'cha'
+        if key in ['b' or 'B']:
+            command = 'bac'
+        if key in ['n' or 'N']:
+            command = 'nex'
+        if key in ['s' or 'S']:
+            command = 'search'
+        Change_Info()
     name_file = Label(win)
     time_file = Label(win)
     volume = Label(win)
@@ -149,7 +174,9 @@ def commands(file, play, volume, time_file): # Check commands
             file.stop()
             Change(command, play)
         elif command == 'GoTo':
-            GoTo(file)       
+            GoTo(file)
+        elif command == 'search':
+            Search(file)
         elif command == 'vl+' or command == 'vl-':
             volume = Change_Volume(command, volume)
             file.audio_set_volume(volume)
@@ -161,7 +188,7 @@ def commands(file, play, volume, time_file): # Check commands
                 file.pause()
                 pause = False
                 pause_time = Timer # Get Timer for when unpause start from that
-                Timer = maxsize**2
+                Timer = (10**10)
                 continue
             else:
                 file.play()
@@ -288,4 +315,44 @@ def Starter(): # Start the program
     Main_player(0)
 
 
+def Search(file):
+    def accept(event): # Go to file
+        def Selection(play):
+            print(play)
+            #file.stop()
+            #Search_win.destroy()
+            #Thread(target=Change_Info).start()
+            #Main_player(play)
+        Name = Enter.get()
+        Search_list = []
+        for i in List_of_files: # Find files and put in list to make menue
+            if Name.lower() in i.lower(): # Compare them with out upper and lower case
+                Search_list.append(i)
+        if len(Search_list) == 0:
+            showerror("error",'Wrong input')
+            Cancel()
+        else:
+            Search_menu = Menu(Search_win,tearoff=0)
+            for Name in Search_list: # This Name is new variable and dont need the first one anymore
+                Show_name = Name.split('\\')
+                Show_name = Show_name[-1]
+                Search_menu.add_command(label=Show_name,command=lambda:Selection(List_of_files.index(Name)))
+            Search_menu.tk_popup(event.x_root,event.y_root)
+    def Cancel(): # continue playing files
+        global command
+        command = 'None'
+        Search_win.destroy() # Close window
+    Search_win = Tk()
+    Search_win.resizable(False,False)
+    Search_win.title('Search_File')
+    Search_win['background'] = 'pink'
+    Label(Search_win,text='Enter Name : ',font=("Times",15,'bold'),bg='pink').grid(row = 0,column=0)
+    Label(Search_win,bg='pink',text='-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-',font=("Times",7,'bold')).grid(row = 1,column=0,columnspan=3)
+    Label(Search_win,text='🎼',font=("Times",30,'bold'),bg='pink').grid(row = 2,column=0)
+    Enter = Entry(Search_win,font=("Times",15,'bold'))
+    Enter.grid(row = 0,column=1,columnspan=2)
+    Button(Search_win,bd=6,text='Search',command = accept,font=("Times",13,'bold')).grid(row = 2,column=1)
+    Button(Search_win,bd=6,text = 'cancel',command=Cancel,font=("Times",13,'bold')).grid(row = 2,column=2) # Cancel
+    Search_win.bind('<Return>', accept) # Accept buy pressing Enter
+    Search_win.mainloop()
 Starter()
