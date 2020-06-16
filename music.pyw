@@ -318,25 +318,24 @@ def Starter(): # Start the program
 def Search(file):
     def accept(event): # Go to file
         def Selection(play):
-            print(play)
-            #file.stop()
-            #Search_win.destroy()
-            #Thread(target=Change_Info).start()
-            #Main_player(play)
+            file.stop()
+            Search_win.destroy()
+            Thread(target=Change_Info).start()
+            Main_player(play)
         Name = Enter.get()
         Search_list = []
         for i in List_of_files: # Find files and put in list to make menue
             if Name.lower() in i.lower(): # Compare them with out upper and lower case
                 Search_list.append(i)
         if len(Search_list) == 0:
-            showerror("error",'Wrong input')
+            showerror("error",'Ca')
             Cancel()
         else:
             Search_menu = Menu(Search_win,tearoff=0)
             for Name in Search_list: # This Name is new variable and dont need the first one anymore
                 Show_name = Name.split('\\')
-                Show_name = Show_name[-1]
-                Search_menu.add_command(label=Show_name,command=lambda:Selection(List_of_files.index(Name)))
+                Show_name = str(List_of_files.index(Name) + 1) + ' : ' + Show_name[-1]
+                Search_menu.add_command(label=Show_name,command=lambda Name = Name :Selection(List_of_files.index(Name)))
             Search_menu.tk_popup(event.x_root,event.y_root)
     def Cancel(): # continue playing files
         global command
@@ -355,4 +354,6 @@ def Search(file):
     Button(Search_win,bd=6,text = 'cancel',command=Cancel,font=("Times",13,'bold')).grid(row = 2,column=2) # Cancel
     Search_win.bind('<Return>', accept) # Accept buy pressing Enter
     Search_win.mainloop()
+
+
 Starter()
