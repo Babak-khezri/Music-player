@@ -9,7 +9,7 @@ from time import sleep
 from threading import Thread
 from tkinter.messagebox import showerror # Show Error for goto
 import webbrowser # Connect to us
-Timer = command = Indicator_Button = List_of_files = None # Global variables
+command = List_of_files = None # Global variables
 Info_Box = ['','','',''] # Main information list
 
 def Get_Files(): # Get all mp3 players in selected directory
@@ -43,8 +43,8 @@ def Get_Files(): # Get all mp3 players in selected directory
             sleep(1)
         else: # Directory is not empty
             warning_win.destroy() # Destroyed second Gui window
+            mixer.init() # Add mixer to play Files
             Thread(target = Graphics).start() # Open main Gui
-            Thread(target = File_Timer).start() # Open timer for mp3 files
             return List_of_files
 
 
@@ -63,9 +63,7 @@ def Graphics(): # Graphic by using tkinter
         App_Icon = PhotoImage(file = 'C:\\Users\\Babak\\Desktop\\python\\EXTRA_FILES\\ico.png')
         win.iconphoto(False , App_Icon) # Change icon
         win['background']='#000d33' # Change main background
-        global Indicator_Button, command
-        Indicator_Button = Button(win, command = lambda: GUI_control('none')) # The unshod but for show information's when program go to next music by timer
-        Label(win, text="◤ 🎵 Welcome to my music player 🎵 ◥",fg = '#40ff00', bg = '#000d33', font = ("Comic sans MS",24,'bold')).grid(row = 0,column=0,columnspan = 8)
+        Label(win, text ="◤ 🎵 Welcome to my music player 🎵 ◥",fg = '#40ff00', bg = '#000d33', font = ("Comic sans MS",24,'bold')).grid(row = 0,column=0,columnspan = 8)
         Label(win,text = '|_-_-_-_-_-_-_-_-_-_-_-_-_-_-_-_|',fg = '#ffcc00',bg = '#000d33',font = ("Comic sans MS",24,'bold')).grid(row = 1,column=0,columnspan = 50)
         win.bind('<Key>',Keyboard_Controll)
         win.protocol("WM_DELETE_WINDOW",lambda:0) # Turn off close window
@@ -82,13 +80,10 @@ def Graphics(): # Graphic by using tkinter
     def GUI_control(but): # Make commands
         global command
         command = but
-        sleep(0.1)
-        show_info()
     def Top_Menu(): # Show menu
         def Menu_commands(get_command): # Get top menu commands
             global command
             command = get_command
-            Change_Info()
         Menu_bar = Menu(win) # Make Top main menu bar
         File_menu = Menu(Menu_bar, tearoff = 0) # Add first menu to menu bar
         File_menu.add_command(label = 'Restart',command = Change_Directory)
@@ -132,7 +127,10 @@ def Graphics(): # Graphic by using tkinter
             command = 'vl+'
         if key == 'Down':
             command = 'vl-'
-        Change_Info()
+            "he"
+    def Update_win(): # Every time ofter 3 second push the button to update window screen
+        Indicator_Button.invoke()
+        win.after(300,Update_win)
     name_file = Label(win)
     time_file = Label(win)
     volume = Label(win)
@@ -152,13 +150,13 @@ def Graphics(): # Graphic by using tkinter
     Button(win,height=55, width=60, bd=16,bg='#000099', image=photo_vou, command=lambda: GUI_control('vl-')).grid(row = 7,column=5)
     Button(win,height=55, width=60, bd=16,bg='#000099', image=photo_exi, command=lambda: GUI_control('exi')).grid(row = 7,column=6)
     Gui_sitting()
-    Change_Info() # Show First file when player open
+    Indicator_Button = Button(win, command = lambda: show_info()) # The unshod but for show information's when program go to next music by timer
+    Update_win()
     win.mainloop()
 
 
 def Main_player(play): # MAin player
     global Info_Box, command
-    mixer.init() # Add mixer to play Files
     command = 'none' # Avoid running a command twice
     mixer.music.load(List_of_files[play])
     mixer.music.play()
@@ -185,9 +183,12 @@ def File_Name(play): # Get the name of file
 
 
 def commands(play, volume, time_file): # Check commands
-    global command, Info_Box, Timer
+    global command, Info_Box
     pause = True # Pause and unpause
     while True:
+        if mixer.music.get_busy() == False: 
+            command = 'nex'
+            #break
         if command in ['bac','nex','cha','exi','time+','time-']:
             Change(command, play)
             command = 'none'
@@ -205,12 +206,9 @@ def commands(play, volume, time_file): # Check commands
             if pause == True:
                 mixer.music.pause()
                 pause = False
-                pause_time = Timer # Get Timer for when unpause start from that
-                Timer = (10**10)
                 continue
             else:
                 mixer.music.unpause()
-                Timer = pause_time
                 pause = True
         else:
             continue
@@ -223,7 +221,6 @@ def GoTo(): # For goto command make window to Enter the file number
             play = int(play) - 1
             if play >= 0 and play < len(List_of_files):
                 Go_win.destroy()
-                Thread(target=Change_Info).start()
                 Main_player(play)
             else:
                 Go_win.destroy()
@@ -265,7 +262,6 @@ def Change(command, play):  # Change mp3 file or Close program
         else:
             Main_player(play - 1)
     if command == 'time+' or command == 'time-':
-        global Timer
         Time = File(List_of_files[play])
         Time = int(Time.info.length)  # Get the files time in second
         Position = Time - Timer 
@@ -308,20 +304,6 @@ def Size_File(play): # Get time of any file
     return ("⌛ " + Minute + ":" + Second + " ⌛")
 
 
-def File_Timer(): # When music over go to next
-    global command, Timer
-    while True: # Timer of file
-        sleep(1)
-        Timer -= 1
-        if Timer == 0:
-            command = 'nex'
-            Change_Info()
-
-
-def Change_Info(): # When use goto or music end change the information
-    sleep(0.3)
-    Indicator_Button.invoke()
-
 
 def Change_Directory(): # Change Direcotry and get new files
     global List_of_files
@@ -356,7 +338,6 @@ def Search(): # Search file by using name
     def accept(event): # Get the files
         def Selection(play):
             Search_win.destroy()
-            Thread(target=Change_Info).start()
             Main_player(play)
         Name = Enter.get()
         Search_list = [] # Collect files that have that name
